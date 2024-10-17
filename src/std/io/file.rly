@@ -359,12 +359,12 @@ file_print_string_user_data :: struct
 
 unimplemented :: fn (name: string)
 {
-	std_io_println("std_io_file attempted to execute an unimplemented path: {string}", name);
+	std_io_println("std_io_file attempted to execute an unimplemented path: {}", name);
 	clib_exit(1);
 }
 
 unreachable :: fn (name: string)
 {
-	std_io_println("std_io_file attempted to execute an unreachable path: {string}", name);
+	std_io_println("std_io_file attempted to execute an unreachable path: {}", name);
 	clib_exit(1);
 }

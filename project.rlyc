@@ -4,8 +4,7 @@ targets =
     [        
         libraries =
         [
-            "../clib",
-            "../os",
+            "../rally-clib",
         ]
     ]
 ]
