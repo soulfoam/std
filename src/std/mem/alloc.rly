@@ -1,0 +1,65 @@
+export_library
+{
+	std_mem_alloc   :: fn (size: usize) -> void&;
+	std_mem_realloc :: fn (ptr: void&, new_size: usize) -> void&;
+	std_mem_dealloc :: fn (ptr: void&);
+	std_mem_grow    :: fn (ptr: void&&, count: usize&, capacity: usize&, element_size: usize) -> void&;
+}
+
+import
+{
+	"clib/stdlib";
+}
+
+std_mem_alloc :: fn (size: usize) -> void&
+{
+	return clib_malloc(size);
+}
+
+std_mem_realloc :: fn (ptr: void&, new_size: usize) -> void&
+{
+	return clib_realloc(ptr, new_size);
+}
+
+std_mem_dealloc :: fn (ptr: void&)
+{
+	clib_free(ptr);
+}
+
+std_mem_grow :: fn (ptr: void&&, count: usize&, capacity: usize&, element_size: usize) -> void&
+{
+	if (count@ < capacity@)
+	{
+		count@ += 1;
+	}
+	else
+	{
+		new_capacity: usize = capacity@;
+		new_ptr: void&;
+
+		// grow capacity
+		if (new_capacity == 0)
+		{
+			new_capacity = 1;
+		}
+		else
+		{
+			new_capacity *= 2;
+		}
+
+		// allocate new ptr
+		new_ptr = std_mem_realloc(ptr@, element_size * new_capacity);
+		if (new_ptr != NULL)
+		{
+			ptr@ = new_ptr;
+			count@ += 1;
+			capacity@ = new_capacity;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+
+	return (ptr@ as u8&) + element_size * (count@ - 1);
+}

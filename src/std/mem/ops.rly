@@ -1,0 +1,264 @@
+export_library
+{
+	std_mem_copy  :: fn (destination: void&, source: void&, size: usize);
+	std_mem_set   :: fn (ptr: void&, size: usize, value: u8);
+	std_mem_equal :: fn (lhs: void&, rhs: void&, size: usize) -> bool;
+	std_mem_print :: fn (ptr: void&, size: usize, fmt: string, v: variadic...) -> usize;
+
+	std_mem_convert_from_le_s16 :: fn (data: s16) -> s16;
+	std_mem_convert_from_le_s32 :: fn (data: s32) -> s32;
+	std_mem_convert_from_le_s64 :: fn (data: s64) -> s64;
+	std_mem_convert_from_le_u16 :: fn (data: u16) -> u16;
+	std_mem_convert_from_le_u32 :: fn (data: u32) -> u32;
+	std_mem_convert_from_le_u64 :: fn (data: u64) -> u64;
+	std_mem_convert_from_be_s16 :: fn (data: s16) -> s16;
+	std_mem_convert_from_be_s32 :: fn (data: s32) -> s32;
+	std_mem_convert_from_be_s64 :: fn (data: s64) -> s64;
+	std_mem_convert_from_be_u16 :: fn (data: u16) -> u16;
+	std_mem_convert_from_be_u32 :: fn (data: u32) -> u32;
+	std_mem_convert_from_be_u64 :: fn (data: u64) -> u64;
+
+	std_mem_convert_into_le_s16 :: fn (data: s16) -> s16;
+	std_mem_convert_into_le_s32 :: fn (data: s32) -> s32;
+	std_mem_convert_into_le_s64 :: fn (data: s64) -> s64;
+	std_mem_convert_into_le_u16 :: fn (data: u16) -> u16;
+	std_mem_convert_into_le_u32 :: fn (data: u32) -> u32;
+	std_mem_convert_into_le_u64 :: fn (data: u64) -> u64;
+	std_mem_convert_into_be_s16 :: fn (data: s16) -> s16;
+	std_mem_convert_into_be_s32 :: fn (data: s32) -> s32;
+	std_mem_convert_into_be_s64 :: fn (data: s64) -> s64;
+	std_mem_convert_into_be_u16 :: fn (data: u16) -> u16;
+	std_mem_convert_into_be_u32 :: fn (data: u32) -> u32;
+	std_mem_convert_into_be_u64 :: fn (data: u64) -> u64;
+}
+
+import
+{
+	"clib/string";
+	"std/io/print";
+	"std/math";
+}
+
+std_mem_copy :: fn (destination: void&, source: void&, size: usize)
+{
+	clib_memcpy(destination, source, size) as void;
+}
+
+std_mem_set :: fn (ptr: void&, size: usize, value: u8)
+{
+    clib_memset(ptr, value as c_int, size) as void;
+}
+
+std_mem_equal :: fn (lhs: void&, rhs: void&, size: usize) -> bool
+{
+	return clib_memcmp(lhs, rhs, size) == 0;
+}
+
+std_mem_print :: fn (ptr: void&, size: usize, fmt: string, v: variadic...) -> usize
+{
+	data: buffer_print_string_user_data = { ptr, size, 0 };
+	std_io_print_formatted(buffer_print_string&, data&, fmt, v);
+	return data.index;
+}
+
+std_mem_convert_from_le_s16 :: fn (data: s16) -> s16
+{
+	return std_mem_convert_from_le_u16(data);
+}
+
+std_mem_convert_from_le_s32 :: fn (data: s32) -> s32
+{
+	return std_mem_convert_from_le_u32(data);
+}
+
+std_mem_convert_from_le_s64 :: fn (data: s64) -> s64
+{
+	return std_mem_convert_from_le_u64(data);
+}
+
+std_mem_convert_from_le_u16 :: fn (data: u16) -> u16
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[0] as u16 << 0)
+		 | (bytes[1] as u16 << 8);
+}
+
+std_mem_convert_from_le_u32 :: fn (data: u32) -> u32
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[0] as u32 << 0)
+		 | (bytes[1] as u32 << 8)
+		 | (bytes[2] as u32 << 16)
+		 | (bytes[3] as u32 << 24);
+}
+
+std_mem_convert_from_le_u64 :: fn (data: u64) -> u64
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[0] as u64 << 0)
+		 | (bytes[1] as u64 << 8)
+		 | (bytes[2] as u64 << 16)
+		 | (bytes[3] as u64 << 24)
+		 | (bytes[4] as u64 << 32)
+		 | (bytes[5] as u64 << 40)
+		 | (bytes[6] as u64 << 48)
+		 | (bytes[7] as u64 << 56);
+}
+
+std_mem_convert_from_be_s16 :: fn (data: s16) -> s16
+{
+	return std_mem_convert_from_be_u16(data);
+}
+
+std_mem_convert_from_be_s32 :: fn (data: s32) -> s32
+{
+	return std_mem_convert_from_be_u32(data);
+}
+
+std_mem_convert_from_be_s64 :: fn (data: s64) -> s64
+{
+	return std_mem_convert_from_be_u64(data);
+}
+
+std_mem_convert_from_be_u16 :: fn (data: u16) -> u16
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[1] as u16 << 0)
+		 | (bytes[0] as u16 << 8);
+}
+
+std_mem_convert_from_be_u32 :: fn (data: u32) -> u32
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[3] as u32 << 0)
+		 | (bytes[2] as u32 << 8)
+		 | (bytes[1] as u32 << 16)
+		 | (bytes[0] as u32 << 24);
+}
+
+std_mem_convert_from_be_u64 :: fn (data: u64) -> u64
+{
+	bytes: u8& = data& as u8&;
+	return (bytes[7] as u64 << 0)
+		 | (bytes[6] as u64 << 8)
+		 | (bytes[5] as u64 << 16)
+		 | (bytes[4] as u64 << 24)
+		 | (bytes[3] as u64 << 32)
+		 | (bytes[2] as u64 << 40)
+		 | (bytes[1] as u64 << 48)
+		 | (bytes[0] as u64 << 56);
+}
+
+std_mem_convert_into_le_s16 :: fn (data: s16) -> s16
+{
+	return std_mem_convert_into_le_u16(data);
+}
+
+std_mem_convert_into_le_s32 :: fn (data: s32) -> s32
+{
+	return std_mem_convert_into_le_u32(data);
+}
+
+std_mem_convert_into_le_s64 :: fn (data: s64) -> s64
+{
+	return std_mem_convert_into_le_u64(data);
+}
+
+std_mem_convert_into_le_u16 :: fn (data: u16) -> u16
+{
+	bytes: u8[size_of(u16)];
+	bytes[1] = (data >> 8 & 0xFF) as u8;
+	bytes[0] = (data >> 0 & 0xFF) as u8;
+	return (bytes as u16&)@;
+}
+
+std_mem_convert_into_le_u32 :: fn (data: u32) -> u32
+{
+	bytes: u8[size_of(u32)];
+	bytes[3] = (data >> 24 & 0xFF) as u8;
+	bytes[2] = (data >> 16 & 0xFF) as u8;
+	bytes[1] = (data >>  8 & 0xFF) as u8;
+	bytes[0] = (data >>  0 & 0xFF) as u8;
+	return (bytes as u32&)@;
+}
+
+std_mem_convert_into_le_u64 :: fn (data: u64) -> u64
+{
+	bytes: u8[size_of(u64)];
+	bytes[7] = (data >> 56 & 0xFF) as u8;
+	bytes[6] = (data >> 48 & 0xFF) as u8;
+	bytes[5] = (data >> 40 & 0xFF) as u8;
+	bytes[4] = (data >> 32 & 0xFF) as u8;
+	bytes[3] = (data >> 24 & 0xFF) as u8;
+	bytes[2] = (data >> 16 & 0xFF) as u8;
+	bytes[1] = (data >>  8 & 0xFF) as u8;
+	bytes[0] = (data >>  0 & 0xFF) as u8;
+	return (bytes as u64&)@;
+}
+
+std_mem_convert_into_be_s16 :: fn (data: s16) -> s16
+{
+	return std_mem_convert_into_be_u16(data);
+}
+
+std_mem_convert_into_be_s32 :: fn (data: s32) -> s32
+{
+	return std_mem_convert_into_be_u32(data);
+}
+
+std_mem_convert_into_be_s64 :: fn (data: s64) -> s64
+{
+	return std_mem_convert_into_be_u64(data);
+}
+
+std_mem_convert_into_be_u16 :: fn (data: u16) -> u16
+{
+	bytes: u8[size_of(u16)];
+	bytes[0] = (data >> 8 & 0xFF) as u8;
+	bytes[1] = (data >> 0 & 0xFF) as u8;
+	return (bytes as u16&)@;
+}
+
+std_mem_convert_into_be_u32 :: fn (data: u32) -> u32
+{
+	bytes: u8[size_of(u32)];
+	bytes[0] = (data >> 24 & 0xFF) as u8;
+	bytes[1] = (data >> 16 & 0xFF) as u8;
+	bytes[2] = (data >>  8 & 0xFF) as u8;
+	bytes[3] = (data >>  0 & 0xFF) as u8;
+	return (bytes as u32&)@;
+}
+
+std_mem_convert_into_be_u64 :: fn (data: u64) -> u64
+{
+	bytes: u8[size_of(u64)];
+	bytes[0] = (data >> 56 & 0xFF) as u8;
+	bytes[1] = (data >> 48 & 0xFF) as u8;
+	bytes[2] = (data >> 40 & 0xFF) as u8;
+	bytes[3] = (data >> 32 & 0xFF) as u8;
+	bytes[4] = (data >> 24 & 0xFF) as u8;
+	bytes[5] = (data >> 16 & 0xFF) as u8;
+	bytes[6] = (data >>  8 & 0xFF) as u8;
+	bytes[7] = (data >>  0 & 0xFF) as u8;
+	return (bytes as u64&)@;
+}
+
+////////////////////////
+// internal functions //
+////////////////////////
+
+buffer_print_string :: fn (str: string, user_data: void&)
+{
+	data: buffer_print_string_user_data& = user_data;
+	size: usize = std_math_min_usize(data.size - data.index, str.size);
+	std_mem_copy(data.ptr as u8& + data.index, str.data, size);
+	data.index += size;
+}
+
+buffer_print_string_user_data :: struct
+{
+	ptr: void&;
+	size: usize;
+	index: usize;
+}
+

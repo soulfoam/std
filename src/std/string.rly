@@ -1,0 +1,311 @@
+export_library
+{
+	std_string_alloc   :: fn (fmt: string, v: variadic...) -> string;
+	std_string_dealloc :: fn (str: string);
+
+	std_string_equal                   :: fn (lhs: string, rhs: string) -> bool;
+    std_string_equal_ignore_case_ascii :: fn (lhs: string, rhs: string) -> bool;
+
+	std_string_for_each_byte :: it (str: string, declare byte: u8);
+
+    std_string_find        :: fn (str: string, find: string) -> string;
+    std_string_tokenize    :: it (str: string, by: string, declare token: string);
+    std_string_starts_with :: fn (str: string, with: string) -> bool;
+
+    // result must be dealloced
+    std_string_replace :: fn (str: string, replace: string, with: string) -> string;
+
+    std_string_from_null_terminated_string :: fn (str: u8&) -> string;
+
+    std_string_into_u8  :: fn (str: string, dst: u8&)  -> bool;
+    std_string_into_u16 :: fn (str: string, dst: u16&) -> bool;
+    std_string_into_u32 :: fn (str: string, dst: u32&) -> bool;
+    std_string_into_u64 :: fn (str: string, dst: u64&) -> bool;
+}
+
+import
+{
+	"clib/ctype";
+	"std/io/print";
+	"std/mem/alloc";
+	"std/mem/ops";
+}
+
+std_string_alloc :: fn (fmt: string, v: variadic...) -> string
+{
+	data: u8&;
+	size: usize = 0;
+
+	if (v.arg_count > 0)
+	{
+		std_io_print_formatted(count_print_string&, size&, fmt, v);
+		data = std_mem_alloc(size);
+		size = std_mem_print(data, size, fmt, v);
+	}
+	else
+	{
+		size = fmt.size;
+		data = std_mem_alloc(size);
+		std_mem_copy(data, fmt.data, size);
+	}
+
+	return string { data, size };
+}
+
+std_string_dealloc :: fn (str: string)
+{
+	std_mem_dealloc(str.data);
+}
+
+std_string_equal :: fn (lhs: string, rhs: string) -> bool
+{
+	if (lhs.size != rhs.size)
+	{
+		return false;
+	}
+
+	return std_mem_equal(lhs.data, rhs.data, lhs.size);
+}
+
+std_string_equal_ignore_case_ascii :: fn (lhs: string, rhs: string) -> bool
+{
+	if (lhs.size != rhs.size)
+	{
+		return false;
+	}
+
+    i: usize = 0;
+    while (i < lhs.size)
+    {
+        if (clib_tolower(lhs.data[i]) != clib_tolower(rhs.data[i]))
+        {
+            return false;
+        }
+
+        i += 1;
+    }
+
+    return true; 
+}
+
+std_string_for_each_byte :: it (str: string, declare byte: u8)
+{
+	i: usize = 0;
+	while (i < str.size)
+	{
+		byte = str.data[i];
+		yield;
+		i += 1;
+	}
+}
+
+std_string_starts_with :: fn (str: string, with: string) -> bool
+{
+    if (with.size > str.size) return false;
+
+    i: usize = 0;
+    while (i < with.size)
+    {
+        if (str.data[i] != with.data[i]) return false;
+        i += 1;
+    }
+
+    return true;
+}
+
+std_string_replace :: fn (str: string, replace: string, with: string) -> string
+{
+    instances: usize = 0;
+    find: string = str;
+    while (true)
+    {
+        find = std_string_find(find, replace);
+        if (find.size == 0) break;
+        instances += 1;
+        find.data += 1;
+        find.size -= 1;
+    }
+
+    total_new_size: usize = str.size - replace.size*instances;
+    total_new_size += with.size*instances;
+
+    res: string;
+    res.data = std_mem_alloc(total_new_size);
+    res.size = 0;
+
+    i: usize = 0;
+    while (i < str.size)
+    {
+        res.data[res.size] = str.data[i];
+        res.size += 1;
+
+        left: usize = str.size - i;
+        if (replace.size <= left) 
+        {
+            if (std_mem_equal(str.data + i, replace.data, replace.size))
+            {
+                res.size -= 1;
+                std_mem_copy(res.data + res.size, with.data, with.size); 
+                i += replace.size;
+                res.size += with.size;
+                continue;
+            }
+        }
+
+        i += 1;
+    }
+
+    return res;
+}
+
+std_string_find :: fn (str: string, find: string) -> string
+{
+    i: usize = 0;
+    while (i < str.size) 
+    {
+        h: usize = i;
+        n: usize = 0;
+
+        while (h < str.size && n < find.size && str.data[h] == find.data[n]) 
+        {
+            h += 1;
+            n += 1;
+        }
+
+        if (n == find.size) return string{str.data + i, str.size - i};
+
+        i += 1;
+    }
+
+    return string{NULL, 0}; 
+}
+
+std_string_tokenize :: it (str: string, by: string, declare token: string)
+{
+    while (str.size >= by.size && std_mem_equal(str.data, by.data, by.size))
+    {
+        str.data += by.size;
+        str.size -= by.size;
+    }
+
+    while (str.size > 0)
+    {
+        next: string = std_string_find(str, by);
+
+        if (next.data == NULL)
+        {
+            if (str.size > 0)
+            {
+                token = str;
+                yield;
+            }
+            break;
+        }
+
+        token.data = str.data;
+        token.size = (next.data - str.data) as usize;
+
+        str.data = next.data + by.size;
+        str.size = str.size - (token.size + by.size);
+
+        yield;
+
+        while (str.size >= by.size && std_mem_equal(str.data, by.data, by.size))
+        {
+            str.data += by.size;
+            str.size -= by.size;
+        }
+    }
+}
+
+std_string_from_null_terminated_string :: fn (str: u8&) -> string
+{
+    c: u8& = str;
+    size: usize = 0;
+    while (c@ != '\0')
+    {
+        size += 1;
+        c += 1;
+    }
+    return string {str, size};
+}
+
+std_string_into_u8 :: fn (str: string, dst: u8&) -> bool
+{
+    val: u64;
+    res: bool = std_string_into_u64(str, val&);
+    dst@ = val as u8;
+    return res;
+}
+
+std_string_into_u16 :: fn (str: string, dst: u16&) -> bool
+{
+    val: u64;
+    res: bool = std_string_into_u64(str, val&);
+    dst@ = val as u16;
+    return res;
+}
+
+std_string_into_u32 :: fn (str: string, dst: u32&) -> bool
+{
+    val: u64;
+    res: bool = std_string_into_u64(str, val&);
+    dst@ = val as u32;
+    return res;
+}
+
+std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
+{
+    dst@ = 0;
+    exp: u64 = 1;
+
+    i: u64 = str.size;
+    while (i > 0)
+    {
+        i -= 1;
+        if (character_is_digit(str.data[i]))
+        {
+            dst@ += character_into_u8(str.data[i]) * exp;
+            exp *= 10;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+////////////////////////
+// internal functions //
+////////////////////////
+
+count_print_string :: fn (str: string, user_data: void&)
+{
+	count: usize& = user_data;
+	count@ += str.size;
+}
+
+character_is_digit :: fn (c: u8) -> bool
+{
+    return c >= '0' && c <= '9';
+}
+
+character_into_u8 :: fn (c: u8) -> u8
+{
+    switch (c)
+    {
+        '1' { return 1; }
+        '2' { return 2; }
+        '3' { return 3; }
+        '4' { return 4; }
+        '5' { return 5; }
+        '6' { return 6; }
+        '7' { return 7; }
+        '8' { return 8; }
+        '9' { return 9; }
+    }
+
+    return 0;
+}

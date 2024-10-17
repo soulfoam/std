@@ -1,0 +1,370 @@
+export_library
+{
+	///////////
+	// types //
+	///////////
+
+	std_io_file       :: struct;
+	std_io_file_flags :: type_alias = u8;
+
+	std_io_file_mode :: enum u8
+	{
+		STD_IO_FILE_MODE_READ;
+		STD_IO_FILE_MODE_WRITE;
+		STD_IO_FILE_MODE_READ_WRITE;
+	}
+
+	std_io_file_error :: enum u8
+	{
+		STD_IO_FILE_ERROR_NONE;
+		STD_IO_FILE_ERROR_NOT_FOUND;
+		STD_IO_FILE_ERROR_PERMISSION_DENIED;
+		STD_IO_FILE_ERROR_OPEN_LIMIT_EXCEEDED;
+		STD_IO_FILE_ERROR_NAME_TOO_LONG;
+		STD_IO_FILE_ERROR_OUT_OF_MEMORY;
+		STD_IO_FILE_ERROR_BAD_FILE_DESCRIPTOR;
+		STD_IO_FILE_ERROR_FILE_TABLE_OVERFLOW;
+		STD_IO_FILE_ERROR_FILE_EXISTS;
+		STD_IO_FILE_ERROR_INVALID_ARGUMENT;
+		STD_IO_FILE_ERROR_IS_DIRECTORY;
+		STD_IO_FILE_ERROR_TOO_BIG;
+		STD_IO_FILE_ERROR_FILE_BUSY;
+		STD_IO_FILE_ERROR_UNKNOWN;
+	}
+
+	/////////////
+	// defines //
+	/////////////
+
+	STD_IO_FILE_FLAG_NONE                :: define std_io_file_flags = 0;
+	STD_IO_FILE_FLAG_CREATE_IF_NOT_FOUND :: define std_io_file_flags = 1 << 0;
+	STD_IO_FILE_FLAG_START_AT_END        :: define std_io_file_flags = 1 << 1;
+	STD_IO_FILE_FLAG_TRUNCATE            :: define std_io_file_flags = 1 << 2;
+
+	///////////////
+	// functions //
+	///////////////
+
+	// open / close
+	std_io_file_open  :: fn (file: std_io_file&, file_path: string, mode: std_io_file_mode, flags: std_io_file_flags) -> std_io_file_error;
+	std_io_file_close :: fn (file: std_io_file&);
+
+	// getters
+	std_io_file_get_mode     :: fn (file: std_io_file&) -> std_io_file_mode;
+	std_io_file_get_position :: fn (file: std_io_file&, dst_position: usize&) -> std_io_file_error;
+	std_io_file_get_size     :: fn (file: std_io_file&, dst_size: usize&) -> std_io_file_error;
+
+	// read
+	std_io_file_read        :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error;
+	std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_error;
+	
+	// write
+	std_io_file_write        :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error;
+	std_io_file_write_string :: fn (file: std_io_file&, str: string, dst_written_size: usize&) -> std_io_file_error;
+
+	// print
+	std_io_file_print :: fn (file: std_io_file&, fmt: string, v: variadic...) -> std_io_file_error;
+
+	// flush
+	std_io_file_flush :: fn (file: std_io_file&) -> std_io_file_error;
+
+	// seek
+	std_io_file_seek_to       :: fn (file: std_io_file&, position: usize) -> std_io_file_error;
+	std_io_file_seek_to_start :: fn (file: std_io_file&) -> std_io_file_error;
+	std_io_file_seek_to_end   :: fn (file: std_io_file&) -> std_io_file_error;
+	std_io_file_seek_forward  :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error;
+	std_io_file_seek_backward :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error;
+}
+
+import
+{
+	"clib/stdio";
+	"clib/stdlib";
+	"std/io/path";
+	"std/io/print";
+	"std/mem/alloc";
+	"std/mem/ops";
+}
+
+///////////
+// types //
+///////////
+
+std_io_file :: struct
+{
+	handle : clib_file&;
+	mode   : std_io_file_mode;
+}
+
+///////////////
+// functions //
+///////////////
+
+// open / close
+std_io_file_open :: fn (file: std_io_file&, file_path: string, mode: std_io_file_mode, flags: std_io_file_flags) -> std_io_file_error
+{
+	file_path_buffer: u8[STD_IO_PATH_MAX] = {};
+	mode_str: string;
+
+	if (file_path.size >= STD_IO_PATH_MAX)
+	{
+		return STD_IO_FILE_ERROR_NAME_TOO_LONG;
+	}
+	std_mem_copy(file_path_buffer, file_path.data, file_path.size);
+
+	file.mode = mode;
+	switch (mode)
+	{
+		STD_IO_FILE_MODE_READ       { mode_str = "rb\0";  }
+		STD_IO_FILE_MODE_WRITE      { mode_str = "wb\0";  }
+		STD_IO_FILE_MODE_READ_WRITE { mode_str = "rb+\0"; }
+	}
+
+    if (flags & STD_IO_FILE_FLAG_CREATE_IF_NOT_FOUND > 0)
+    {
+        mode_str = "wb+\0";
+    }
+
+	file.handle = clib_fopen(file_path_buffer as c_char&, mode_str.data as c_char&);
+	if (file.handle == NULL) 
+	{
+		// TODO: determine and return correct error
+		return STD_IO_FILE_ERROR_UNKNOWN;
+	}
+
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_close :: fn (file: std_io_file&)
+{
+	// NOTE: std_io_file_close discards the error for fclose. fclose does not
+	// fail for read-only files so failure only indicates some pending writes
+	// failed to flush. However, using the file after calling fclose is
+	// undefined behaviour even after an error occoured, since you cant
+	// re-attempt to close the file the error is almost useless. If you need to
+	// reliably close the file, manually flush it first and handle the failure
+	// case while the handle is still valid.
+	error: c_int = clib_fclose(file.handle);
+}
+
+// getters 
+
+std_io_file_get_mode :: fn (file: std_io_file&) -> std_io_file_mode
+{
+	return file.mode;
+}
+
+std_io_file_get_position :: fn (file: std_io_file&, dst_position: usize&) -> std_io_file_error
+{
+	position: c_long = clib_ftell(file.handle);
+	if (position == -1) return file_error_from_errno();
+
+	dst_position@ = position;
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_get_size :: fn (file: std_io_file&, dst_size: usize&) -> std_io_file_error
+{
+	error: std_io_file_error;
+	start_position: usize;
+
+	error = std_io_file_get_position(file, start_position&);
+	if (error != STD_IO_FILE_ERROR_NONE) return error;
+
+	error = std_io_file_seek_to_end(file);
+	if (error != STD_IO_FILE_ERROR_NONE) return error;
+
+	error = std_io_file_get_position(file, dst_size);
+	if (error != STD_IO_FILE_ERROR_NONE) return error;
+
+	error = std_io_file_seek_to(file, start_position);
+	if (error != STD_IO_FILE_ERROR_NONE) return error;
+
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+// read
+
+std_io_file_read :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error
+{
+	read_size: usize = clib_fread(buffer, 1, buffer_size, file.handle);
+	
+	if (read_size != buffer_size && clib_ferror(file.handle) != 0)
+	{
+		clib_clearerr(file.handle);
+		return STD_IO_FILE_ERROR_UNKNOWN;
+	}
+
+	if (dst_read_size != NULL)
+	{
+		dst_read_size@ = read_size;
+	}
+
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_error
+{
+	file_error: std_io_file_error;
+	file_position: usize;
+	file_size: usize;
+	data_size: usize;
+	read_size: usize;
+	data: u8&;
+
+	// get file position
+	file_error = std_io_file_get_position(file, file_position&);
+	if (file_error != STD_IO_FILE_ERROR_NONE)
+	{
+		return file_error;
+	}
+
+	// get file size
+	file_error = std_io_file_get_size(file, file_size&);
+	if (file_error != STD_IO_FILE_ERROR_NONE)
+	{
+		return file_error;
+	}
+
+	// data size is the remaining bytes in the file from the current position
+	data_size = file_size - file_position;
+	data = std_mem_alloc(data_size + 1);
+	data[data_size] = '\0';
+
+	// read to end
+	file_error = std_io_file_read(file, data, data_size, read_size&);
+	if (file_error != STD_IO_FILE_ERROR_NONE)
+	{
+		std_mem_dealloc(data);
+		return file_error;
+	}
+
+	// assert that read size must be data size
+	if (read_size != data_size)
+	{
+		unreachable("std_io_file_read_to_end");
+	}
+
+	// update dst
+	dst.data = data;
+	dst.size = data_size;
+
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+// write
+
+std_io_file_write :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error
+{
+	written_size: usize = clib_fwrite(buffer, 1, buffer_size, file.handle);
+	
+	if (written_size != buffer_size)
+	{
+		return STD_IO_FILE_ERROR_UNKNOWN;
+	}
+
+	if (dst_written_size != NULL)
+	{
+		dst_written_size@ = written_size;
+	}
+
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_write_string :: fn (file: std_io_file&, str: string, dst_written_size: usize&) -> std_io_file_error
+{
+	return std_io_file_write(file, str.data, str.size, dst_written_size);
+}
+
+// print
+
+std_io_file_print :: fn (file: std_io_file&, fmt: string, v: variadic...) -> std_io_file_error
+{
+	data: file_print_string_user_data = { file, STD_IO_FILE_ERROR_NONE };
+	std_io_print_formatted(file_print_string&, data&, fmt, v);
+	return data.error;
+}
+
+// flush
+
+std_io_file_flush :: fn (file: std_io_file&) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fflush(file.handle) as void;
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+// seek
+
+std_io_file_seek_to :: fn (file: std_io_file&, position: usize) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fseek(file.handle, position, clib_seek_set());
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_seek_to_start :: fn (file: std_io_file&) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fseek(file.handle, 0, clib_seek_set());
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_seek_to_end :: fn (file: std_io_file&) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fseek(file.handle, 0, clib_seek_end());
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_seek_forward :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fseek(file.handle, offset, clib_seek_cur());
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+std_io_file_seek_backward :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error
+{
+	// TODO: check for errors
+	clib_fseek(file.handle, -offset, clib_seek_cur());
+	return STD_IO_FILE_ERROR_NONE;
+}
+
+////////////////////////
+// internal functions //
+////////////////////////
+
+file_error_from_errno :: fn () -> std_io_file_error
+{
+	unimplemented("file_error_from_errno");
+	return STD_IO_FILE_ERROR_UNKNOWN;
+}
+
+file_print_string :: fn (str: string, user_data: void&)
+{
+	data: file_print_string_user_data& = user_data;
+
+	if (data.error == STD_IO_FILE_ERROR_NONE)
+	{
+		data.error = std_io_file_write_string(data.file, str, NULL);
+	}
+}
+
+file_print_string_user_data :: struct
+{
+	file: std_io_file&;
+	error: std_io_file_error;
+}
+
+unimplemented :: fn (name: string)
+{
+	std_io_println("std_io_file attempted to execute an unimplemented path: {string}", name);
+	clib_exit(1);
+}
+
+unreachable :: fn (name: string)
+{
+	std_io_println("std_io_file attempted to execute an unreachable path: {string}", name);
+	clib_exit(1);
+}

@@ -1,0 +1,8 @@
+export_library
+{
+#if OS_LINUX
+	STD_IO_PATH_MAX :: define usize = 4096;
+#elif OS_WINDOWS
+	STD_IO_PATH_MAX :: define usize = 260;
+#end
+}

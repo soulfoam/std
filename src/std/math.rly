@@ -1,0 +1,726 @@
+export_library
+{
+	// std_math_min
+	std_math_min_s8    :: fn (lhs: s8, rhs: s8) -> s8;
+	std_math_min_s16   :: fn (lhs: s16, rhs: s16) -> s16;
+	std_math_min_s32   :: fn (lhs: s32, rhs: s32) -> s32;
+	std_math_min_s64   :: fn (lhs: s64, rhs: s64) -> s64;
+	std_math_min_u8    :: fn (lhs: u8, rhs: u8) -> u8;
+	std_math_min_u16   :: fn (lhs: u16, rhs: u16) -> u16;
+	std_math_min_u32   :: fn (lhs: u32, rhs: u32) -> u32;
+	std_math_min_u64   :: fn (lhs: u64, rhs: u64) -> u64;
+	std_math_min_f32   :: fn (lhs: f32, rhs: f32) -> f32;
+	std_math_min_f64   :: fn (lhs: f64, rhs: f64) -> f64;
+	std_math_min_ssize :: fn (lhs: ssize, rhs: ssize) -> ssize;
+	std_math_min_usize :: fn (lhs: usize, rhs: usize) -> usize;
+
+	// std_math_max
+	std_math_max_s8    :: fn (lhs: s8, rhs: s8) -> s8;
+	std_math_max_s16   :: fn (lhs: s16, rhs: s16) -> s16;
+	std_math_max_s32   :: fn (lhs: s32, rhs: s32) -> s32;
+	std_math_max_s64   :: fn (lhs: s64, rhs: s64) -> s64;
+	std_math_max_u8    :: fn (lhs: u8, rhs: u8) -> u8;
+	std_math_max_u16   :: fn (lhs: u16, rhs: u16) -> u16;
+	std_math_max_u32   :: fn (lhs: u32, rhs: u32) -> u32;
+	std_math_max_u64   :: fn (lhs: u64, rhs: u64) -> u64;
+	std_math_max_f32   :: fn (lhs: f32, rhs: f32) -> f32;
+	std_math_max_f64   :: fn (lhs: f64, rhs: f64) -> f64;
+	std_math_max_ssize :: fn (lhs: ssize, rhs: ssize) -> ssize;
+	std_math_max_usize :: fn (lhs: usize, rhs: usize) -> usize;
+
+	// std_math_abs
+	std_math_abs_s8    :: fn (value: s8) -> s8;
+	std_math_abs_s16   :: fn (value: s16) -> s16;
+	std_math_abs_s32   :: fn (value: s32) -> s32;
+	std_math_abs_s64   :: fn (value: s64) -> s64;
+	std_math_abs_f32   :: fn (value: f32) -> f32;
+	std_math_abs_f64   :: fn (value: f64) -> f64;
+	std_math_abs_ssize :: fn (value: ssize) -> ssize;
+
+	// std_math_pow
+	std_math_pow_f32 :: fn (base: f32, exponent: f32) -> f32;
+	std_math_pow_f64 :: fn (base: f64, exponent: f64) -> f64;
+
+	// std_math_sqrt
+	std_math_sqrt_f32 :: fn (value: f32) -> f32;
+	std_math_sqrt_f64 :: fn (value: f64) -> f64;
+
+	// std_math_log10
+	std_math_log10_f32 :: fn (n: f32) -> f32;
+	std_math_log10_f64 :: fn (n: f64) -> f64;
+
+	// std_math_floor
+	std_math_floor_f32 :: fn (value: f32) -> f32;
+	std_math_floor_f64 :: fn (value: f64) -> f64;
+
+	// std_math_round
+	std_math_round_f32 :: fn (value: f32) -> f32;
+	std_math_round_f64 :: fn (value: f64) -> f64;
+
+	// std_math_ceil
+	std_math_ceil_f32 :: fn (value: f32) -> f32;
+	std_math_ceil_f64 :: fn (value: f64) -> f64;
+
+	// std_math_cos
+	std_math_cos_f32 :: fn (angle: f32) -> f32;
+	std_math_cos_f64 :: fn (angle: f64) -> f64;
+	
+	// std_math_sin
+	std_math_sin_f32 :: fn (angle: f32) -> f32;
+	std_math_sin_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_tan
+	std_math_tan_f32 :: fn (angle: f32) -> f32;
+	std_math_tan_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_acos
+	std_math_acos_f32 :: fn (angle: f32) -> f32;
+	std_math_acos_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_asin
+	std_math_asin_f32 :: fn (angle: f32) -> f32;
+	std_math_asin_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_atan
+	std_math_atan_f32 :: fn (angle: f32) -> f32;
+	std_math_atan_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_atan2
+	std_math_atan2_f32 :: fn (y: f32, x: f32) -> f32;
+	std_math_atan2_f64 :: fn (y: f64, x: f64) -> f32;
+
+	// std_math_cosh
+	std_math_cosh_f32 :: fn (angle: f32) -> f32;
+	std_math_cosh_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_sinh
+	std_math_sinh_f32 :: fn (angle: f32) -> f32;
+	std_math_sinh_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_tanh
+	std_math_tanh_f32 :: fn (angle: f32) -> f32;
+	std_math_tanh_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_acosh
+	std_math_acosh_f32 :: fn (angle: f32) -> f32;
+	std_math_acosh_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_asinh
+	std_math_asinh_f32 :: fn (angle: f32) -> f32;
+	std_math_asinh_f64 :: fn (angle: f64) -> f64;
+
+	// std_math_atanh
+	std_math_atanh_f32 :: fn (angle: f32) -> f32;
+	std_math_atanh_f64 :: fn (angle: f64) -> f64;
+}
+
+import
+{
+	"clib/math";
+}
+
+// std_math_min
+
+std_math_min_s8 :: fn (lhs: s8, rhs: s8) -> s8
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_s16 :: fn (lhs: s16, rhs: s16) -> s16
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_s32 :: fn (lhs: s32, rhs: s32) -> s32
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_s64 :: fn (lhs: s64, rhs: s64) -> s64
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_u8 :: fn (lhs: u8, rhs: u8) -> u8
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_u16 :: fn (lhs: u16, rhs: u16) -> u16
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_u32 :: fn (lhs: u32, rhs: u32) -> u32
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_u64 :: fn (lhs: u64, rhs: u64) -> u64
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_f32 :: fn (lhs: f32, rhs: f32) -> f32
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_f64 :: fn (lhs: f64, rhs: f64) -> f64
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_ssize :: fn (lhs: ssize, rhs: ssize) -> ssize
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_min_usize :: fn (lhs: usize, rhs: usize) -> usize
+{
+	if (lhs < rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+// std_math_max
+
+std_math_max_s8 :: fn (lhs: s8, rhs: s8) -> s8
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_s16 :: fn (lhs: s16, rhs: s16) -> s16
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_s32 :: fn (lhs: s32, rhs: s32) -> s32
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_s64 :: fn (lhs: s64, rhs: s64) -> s64
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_u8 :: fn (lhs: u8, rhs: u8) -> u8
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_u16 :: fn (lhs: u16, rhs: u16) -> u16
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_u32 :: fn (lhs: u32, rhs: u32) -> u32
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_u64 :: fn (lhs: u64, rhs: u64) -> u64
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_f32 :: fn (lhs: f32, rhs: f32) -> f32
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_f64 :: fn (lhs: f64, rhs: f64) -> f64
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_ssize :: fn (lhs: ssize, rhs: ssize) -> ssize
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+std_math_max_usize :: fn (lhs: usize, rhs: usize) -> usize
+{
+	if (lhs > rhs)
+	{
+		return lhs;
+	}
+	else
+	{
+		return rhs;
+	}
+}
+
+// std_math_abs
+
+std_math_abs_s8 :: fn (value: s8) -> s8
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_s16 :: fn (value: s16) -> s16
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_s32 :: fn (value: s32) -> s32
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_s64 :: fn (value: s64) -> s64
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_f32 :: fn (value: f32) -> f32
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_f64 :: fn (value: f64) -> f64
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+std_math_abs_ssize :: fn (value: ssize) -> ssize
+{
+	if (value >= 0)
+	{
+		return value;
+	}
+	else
+	{
+		return -value;
+	}
+}
+
+// std_math_pow
+
+std_math_pow_f32 :: fn (base: f32, exponent: f32) -> f32
+{
+	return clib_powf(base, exponent);
+}
+
+std_math_pow_f64 :: fn (base: f64, exponent: f64) -> f64
+{
+	return clib_pow(base, exponent);
+}
+
+// std_math_sqrt
+
+std_math_sqrt_f32 :: fn (value: f32) -> f32
+{
+	return clib_sqrtf(value);
+}
+
+std_math_sqrt_f64 :: fn (value: f64) -> f64
+{
+	return clib_sqrt(value);
+}
+
+// std_math_log10
+
+std_math_log10_f32 :: fn (n: f32) -> f32
+{
+	return clib_log10f(n as c_float);
+}
+
+std_math_log10_f64 :: fn (n: f64) -> f64
+{
+	return clib_log10(n as c_double);
+}
+
+// std_math_floor
+
+std_math_floor_f32 :: fn (value: f32) -> f32
+{
+	return clib_floorf(value);
+}
+
+std_math_floor_f64 :: fn (value: f64) -> f64
+{
+	return clib_floor(value);
+}
+
+// std_math_round
+
+std_math_round_f32 :: fn (value: f32) -> f32
+{
+	return clib_roundf(value);
+}
+
+std_math_round_f64 :: fn (value: f64) -> f64
+{
+	return clib_round(value);
+}
+
+// std_math_ceil
+
+std_math_ceil_f32 :: fn (value: f32) -> f32
+{
+	return clib_ceilf(value);
+}
+
+std_math_ceil_f64 :: fn (value: f64) -> f64
+{
+	return clib_ceil(value);
+}
+
+// std_math_cos
+
+std_math_cos_f32 :: fn (angle: f32) -> f32
+{
+	return clib_cosf(angle);
+}
+
+std_math_cos_f64 :: fn (angle: f64) -> f64
+{
+	return clib_cos(angle);
+}
+
+// std_math_sin
+
+std_math_sin_f32 :: fn (angle: f32) -> f32
+{
+	return clib_sinf(angle);
+}
+
+std_math_sin_f64 :: fn (angle: f64) -> f64
+{
+	return clib_sin(angle);
+}
+
+// std_math_tan
+
+std_math_tan_f32 :: fn (angle: f32) -> f32
+{
+	return clib_tanf(angle);
+}
+
+std_math_tan_f64 :: fn (angle: f64) -> f64
+{
+	return clib_tan(angle);
+}
+
+// std_math_acos
+
+std_math_acos_f32 :: fn (angle: f32) -> f32
+{
+	return clib_acosf(angle);
+}
+
+std_math_acos_f64 :: fn (angle: f64) -> f64
+{
+	return clib_acos(angle);
+}
+
+// std_math_asin
+
+std_math_asin_f32 :: fn (angle: f32) -> f32
+{
+	return clib_asinf(angle);
+}
+
+std_math_asin_f64 :: fn (angle: f64) -> f64
+{
+	return clib_asin(angle);
+}
+
+// std_math_atan
+
+std_math_atan_f32 :: fn (angle: f32) -> f32
+{
+	return clib_atanf(angle);
+}
+
+std_math_atan_f64 :: fn (angle: f64) -> f64
+{
+	return clib_atan(angle);
+}
+
+// std_math_atan2
+
+std_math_atan2_f32 :: fn (y: f32, x: f32) -> f32
+{
+	return clib_atan2f(y, x);
+}
+
+std_math_atan2_f64 :: fn (y: f64, x: f64) -> f32
+{
+	return clib_atan2(y, x);
+}
+
+// std_math_cosh
+
+std_math_cosh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_coshf(angle);
+}
+
+std_math_cosh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_cosh(angle);
+}
+
+// std_math_sinh
+
+std_math_sinh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_sinhf(angle);
+}
+
+std_math_sinh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_sinh(angle);
+}
+
+// std_math_tanh
+
+std_math_tanh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_tanhf(angle);
+}
+
+std_math_tanh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_tanh(angle);
+}
+
+// std_math_acosh
+
+std_math_acosh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_acoshf(angle);
+}
+
+std_math_acosh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_acosh(angle);
+}
+
+// std_math_asinh
+
+std_math_asinh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_asinhf(angle);
+}
+
+std_math_asinh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_asinh(angle);
+}
+
+// std_math_atanh
+
+std_math_atanh_f32 :: fn (angle: f32) -> f32
+{
+	return clib_atanhf(angle);
+}
+
+std_math_atanh_f64 :: fn (angle: f64) -> f64
+{
+	return clib_atanh(angle);
+}

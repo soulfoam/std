@@ -1,0 +1,418 @@
+export_library
+{
+	///////////
+	// types //
+	///////////
+
+	std_io_print_string_fn :: type_alias = fn (str: string, user_data: void&);
+
+	///////////////
+	// functions //
+	///////////////
+
+	std_io_print :: fn (fmt: string, v: variadic...);
+    std_io_println :: fn (fmt: string, v: variadic...);
+
+	std_io_print_formatted :: fn (print_fn: std_io_print_string_fn&, user_data: void&, fmt: string, v: variadic...);
+}
+
+import
+{
+	"clib/math";
+	"clib/stdio";
+	"clib/stdlib";
+	"std/math";
+	"std/mem/ops";
+	"std/string";
+}
+
+///////////////
+// functions //
+///////////////
+
+std_io_println :: fn (fmt: string, v: variadic...)
+{
+	std_io_print_formatted(stdout_print_string&, NULL, fmt, v);
+	stdout_print_string("\n", NULL);
+	clib_fflush(clib_stdout()) as void;
+}
+
+std_io_print :: fn (fmt: string, v: variadic...)
+{
+	std_io_print_formatted(stdout_print_string&, NULL, fmt, v);
+	clib_fflush(clib_stdout()) as void;
+}
+
+for_each_format_specifier_while_printing :: it (print_fn: std_io_print_string_fn&, user_data: void&, fmt: string, declare format_specifier: string)
+{
+	index  : usize = 0;
+	buffer : string = { fmt.data, 0 };
+
+	while (index < fmt.size)
+	{
+		if (fmt.data[index] == '{')
+		{
+			format_specifier = take_format_specifier(fmt, index);
+			if (format_specifier.size == 0)
+			{
+				buffer.size += 1;
+				index += 1;
+				continue;
+			}
+
+			// flush buffer
+			print_fn(buffer, user_data);
+			index += format_specifier.size;
+			buffer = string { fmt.data + index, 0 };
+
+			yield;
+		}
+		else
+		{
+			buffer.size += 1;
+			index += 1;
+		}
+	}
+
+	print_fn(buffer, user_data);
+}
+
+take_format_specifier :: fn (fmt: string, index: usize) -> string
+{
+	found_close_bracket: bool = false;
+	start_index: usize = index;
+
+	while (index < fmt.size)
+	{
+		if (fmt.data[index] == '}')
+		{
+			found_close_bracket = true;
+			break;
+		}
+
+		index += 1;
+	}
+
+	if (found_close_bracket)
+	{
+		return string { fmt.data + start_index, index - start_index + 1 };
+	}
+	else
+	{
+		return string { NULL, 0 };
+	}
+}
+
+std_io_print_formatted :: fn (print_fn: std_io_print_string_fn&, user_data: void&, fmt: string, v: variadic...)
+{
+	arg_index: usize = 0;
+
+	for_each_format_specifier_while_printing(print_fn, user_data, fmt, format_specifier: string)
+	{
+		if (arg_index >= v.arg_count)
+		{
+			print_fn(format_specifier, user_data);
+			continue;
+		}
+
+		if (std_string_equal(format_specifier, "{}"))
+		{
+			options: format_options = { hex = false };
+			format_arg(print_fn, user_data, v.args[arg_index], options);
+			arg_index += 1;		
+		}
+		else if (std_string_equal(format_specifier, "{hex}"))
+		{
+			options: format_options = { hex = true };
+			format_arg(print_fn, user_data, v.args[arg_index], options);
+			arg_index += 1;
+		}
+		else
+		{
+			print_fn(format_specifier, user_data);
+		}
+	}
+}
+
+//////////////////////
+// internal defines //
+//////////////////////
+
+MAX_DIGITS_IN_U64 :: define usize = 20;
+
+//////////////////////
+// internal structs //
+//////////////////////
+
+format_options :: struct
+{
+	hex: bool;
+}
+
+////////////////////////
+// internal functions //
+////////////////////////
+
+stdout_print_string :: fn (str: string, user_data: void&)
+{
+	wrote: usize = clib_fwrite(str.data, size_of(u8), str.size, clib_stdout());
+}
+
+///////////////////////////////
+// internal format functions //
+///////////////////////////////
+
+format_arg :: fn (print_fn: std_io_print_string_fn&, user_data: void&, arg: variadic_arg, options: format_options)
+{
+	switch (arg.type)
+	{
+		VARIADIC_ARG_TYPE_BOOL   { format_bool(print_fn, user_data, arg.data.as_bool, options);     }
+		VARIADIC_ARG_TYPE_U8     { format_u8(print_fn, user_data, arg.data.as_u8, options);         }
+		VARIADIC_ARG_TYPE_U16    { format_u16(print_fn, user_data, arg.data.as_u16, options);       }
+		VARIADIC_ARG_TYPE_U32    { format_u32(print_fn, user_data, arg.data.as_u32, options);       }
+		VARIADIC_ARG_TYPE_U64    { format_u64(print_fn, user_data, arg.data.as_u64, options);       }
+		VARIADIC_ARG_TYPE_S8     { format_s8(print_fn, user_data, arg.data.as_s8, options);         }
+		VARIADIC_ARG_TYPE_S16    { format_s16(print_fn, user_data, arg.data.as_s16, options);       }
+		VARIADIC_ARG_TYPE_S32    { format_s32(print_fn, user_data, arg.data.as_s32, options);       }
+		VARIADIC_ARG_TYPE_S64    { format_s64(print_fn, user_data, arg.data.as_s64, options);       }
+		VARIADIC_ARG_TYPE_F32    { format_f32(print_fn, user_data, arg.data.as_f32, options);       }
+		VARIADIC_ARG_TYPE_F64    { format_f64(print_fn, user_data, arg.data.as_f64, options);       }
+		VARIADIC_ARG_TYPE_UPTR   { format_uptr(print_fn, user_data, arg.data.as_uptr, options);     }
+		VARIADIC_ARG_TYPE_SPTR   { format_sptr(print_fn, user_data, arg.data.as_sptr, options);     }
+		VARIADIC_ARG_TYPE_USIZE  { format_usize(print_fn, user_data, arg.data.as_usize, options);   }
+		VARIADIC_ARG_TYPE_SSIZE  { format_ssize(print_fn, user_data, arg.data.as_ssize, options);   }
+		VARIADIC_ARG_TYPE_STRING { format_string(print_fn, user_data, arg.data.as_string, options); }
+
+        VARIADIC_ARG_TYPE_C_UNSIGNED_CHAR      { format_c_uchar(print_fn, user_data, arg.data.as_c_uchar, options);         }
+        VARIADIC_ARG_TYPE_C_CHAR               { format_c_char(print_fn, user_data, arg.data.as_c_char, options);           }
+        VARIADIC_ARG_TYPE_C_UNSIGNED_SHORT     { format_c_ushort(print_fn, user_data, arg.data.as_c_ushort, options);       }
+        VARIADIC_ARG_TYPE_C_SHORT              { format_c_short(print_fn, user_data, arg.data.as_c_short, options);         }
+        VARIADIC_ARG_TYPE_C_UNSIGNED_INT       { format_c_uint(print_fn, user_data, arg.data.as_c_uint, options);           }
+        VARIADIC_ARG_TYPE_C_INT                { format_c_int(print_fn, user_data, arg.data.as_c_int, options);             }
+        VARIADIC_ARG_TYPE_C_UNSIGNED_LONG      { format_c_ulong(print_fn, user_data, arg.data.as_c_ulong, options);         }
+        VARIADIC_ARG_TYPE_C_LONG               { format_c_long(print_fn, user_data, arg.data.as_c_long, options);           }
+        VARIADIC_ARG_TYPE_C_UNSIGNED_LONG_LONG { format_c_ulonglong(print_fn, user_data, arg.data.as_c_ulonglong, options); }
+        VARIADIC_ARG_TYPE_C_LONG_LONG          { format_c_longlong(print_fn, user_data, arg.data.as_c_longlong, options);   }
+	}
+}
+
+format_bool :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: bool, options: format_options)
+{
+	switch (data)
+	{
+		true  { print_fn("true" , user_data); }
+		false { print_fn("false", user_data); }
+	}
+}
+
+format_s8 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s8, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_s16 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s16, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_s32 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s32, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_s64 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s64, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_u8 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u8, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_u16 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u16, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_u32 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u32, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_u64 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u64, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_f32 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f32, options: format_options)
+{
+	format_decimal(print_fn, user_data, data);
+}
+
+format_f64 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f64, options: format_options)
+{
+	format_decimal(print_fn, user_data, data);
+}
+
+format_uptr :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: uptr, options: format_options)
+{
+    // TODO: support cases where uptr > u64
+	format_unsigned_integer(print_fn, user_data, data as u64, options);
+}
+
+format_sptr :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: sptr, options: format_options)
+{
+    // TODO: support cases where sptr > s64
+	format_signed_integer(print_fn, user_data, data as s64, options);
+}
+
+format_usize :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: usize, options: format_options)
+{
+    // TODO: support cases where usize > u64
+	format_unsigned_integer(print_fn, user_data, data as u64, options);
+}
+
+format_ssize :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: ssize, options: format_options)
+{
+    // TODO: support cases where ssize > s64
+	format_signed_integer(print_fn, user_data, data as s64, options);
+}
+
+//////////////////////////////////////////////////////////////////
+// internal c format functions
+// TODO: support the possible variable sized types of each
+//////////////////////////////////////////////////////////////////
+
+format_c_uchar :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_uchar, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_c_char :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_char, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_c_ushort :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_ushort, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_c_short :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_short, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_c_uint :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_uint, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_c_int :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_int, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_c_ulong :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_ulong, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_c_long :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_long, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_c_ulonglong :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_ulonglong, options: format_options)
+{
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_c_longlong :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: c_longlong, options: format_options)
+{
+	format_signed_integer(print_fn, user_data, data, options);
+}
+
+format_string :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: string, options: format_options)
+{
+	print_fn(data, user_data);
+}
+
+format_signed_integer :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s64, options: format_options)
+{
+	if (data < 0)
+	{
+		data *= -1;
+		print_fn("-", user_data);
+	}
+
+	format_unsigned_integer(print_fn, user_data, data, options);
+}
+
+format_unsigned_integer :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u64, options: format_options)
+{
+	buffer      : u8[MAX_DIGITS_IN_U64];
+	digit_count : usize = 1;
+	index       : usize;
+
+    if (data != 0)
+    {
+        digit_count = std_math_log10_f64(data) + 1;
+    }
+
+	index = digit_count;
+
+	while (index > 0)
+	{
+		buffer[index-1] = (data % 10) as u8 + '0';
+		data /= 10;
+		index -= 1;
+	}
+
+	str: string = { buffer, digit_count };
+	print_fn(str, user_data);
+}
+
+format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f64)
+{
+	unimplemented("format_decimal");
+}
+
+for_each_digit_f64 :: it (data: f64, declare digit: u8)
+{
+	// int_part: f64;
+	// float_part: f64;
+
+	// if (data < 0)
+	// {
+		// data *= -1;
+		// digit = '-';
+		// yield;
+	// }
+
+	// float_part = clib_modf(data, int_part&);
+    // fraction: u64 = clib_fabs(float_part) * 10000000;
+    // fraction = clib_ceil(fraction/100) * 100;
+
+	// for_each_digit_u64(int_part as u64, digit_inner: u8)
+	// {
+		// digit = digit_inner;
+		// yield;
+	// }
+
+	// digit = '.';
+	// yield;
+
+	// for_each_digit_u64(fraction as u64, digit_inner: u8)
+	// {
+	    // digit = digit_inner;
+	    // yield;
+	// }
+}
+
+unimplemented :: fn (name: string)
+{
+	clib_printf("std/io/print.rly attempted to execute an unimplemented path: %.*s\n".data as c_char&, name.size as c_int, name.data as c_char&) as void;
+	clib_exit(1);
+}

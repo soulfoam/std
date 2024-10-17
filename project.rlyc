@@ -1,0 +1,13 @@
+targets =
+[
+    default = 
+    [        
+        libraries =
+        [
+            "../clib",
+            "../os",
+        ]
+    ]
+]
+
+
