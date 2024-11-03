@@ -4,9 +4,8 @@ targets =
     [        
         libraries =
         [
-            "../rally-clib",
+            "git https://github.com/soulfoam/rally-clib",
         ]
     ]
-]
-
+],
 
