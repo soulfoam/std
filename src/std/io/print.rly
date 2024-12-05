@@ -247,12 +247,12 @@ format_u64 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u64
 
 format_f32 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f32, options: format_options)
 {
-	format_decimal(print_fn, user_data, data);
+	format_decimal(print_fn, user_data, data, 6, options);
 }
 
 format_f64 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f64, options: format_options)
 {
-	format_decimal(print_fn, user_data, data);
+	format_decimal(print_fn, user_data, data, 12, options);
 }
 
 format_uptr :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: uptr, options: format_options)
@@ -374,41 +374,54 @@ format_unsigned_integer :: fn (print_fn: std_io_print_string_fn&, user_data: voi
 	print_fn(str, user_data);
 }
 
-format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f64)
+format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: f64, max_fractional_digits: u8, options: format_options)
 {
-	unimplemented("format_decimal");
-}
+	integer_part: u64;
+	fractional_part: f64;
+	fractional_part_buffer: u8[MAX_DIGITS_IN_U64];
+	fractional_part_digits: u8;
+	fractional_part_significant_digits: u8;
+	negative: bool;
+	digit: u8;
 
-for_each_digit_f64 :: it (data: f64, declare digit: u8)
-{
-	// int_part: f64;
-	// float_part: f64;
+	negative = data < 0.0;
+	if (negative)
+	{
+		data *= -1.0;
+	}
 
-	// if (data < 0)
-	// {
-		// data *= -1;
-		// digit = '-';
-		// yield;
-	// }
+	integer_part = data as u64;
+	fractional_part = data - integer_part;
+	fractional_part_digits = 0;
+	fractional_part_significant_digits = 0;
 
-	// float_part = clib_modf(data, int_part&);
-    // fraction: u64 = clib_fabs(float_part) * 10000000;
-    // fraction = clib_ceil(fraction/100) * 100;
+	while (fractional_part_digits < max_fractional_digits)
+	{
+		fractional_part *= 10.0;
+		digit = fractional_part as u8;
+		fractional_part_buffer[fractional_part_digits] = digit + '0';
+		fractional_part_digits += 1;
+		fractional_part -= digit;
 
-	// for_each_digit_u64(int_part as u64, digit_inner: u8)
-	// {
-		// digit = digit_inner;
-		// yield;
-	// }
+		if (digit != 0)
+		{
+			fractional_part_significant_digits = fractional_part_digits;
+		}
+	}
 
-	// digit = '.';
-	// yield;
+	if (negative)
+	{
+		print_fn("-", user_data);
+	}
 
-	// for_each_digit_u64(fraction as u64, digit_inner: u8)
-	// {
-	    // digit = digit_inner;
-	    // yield;
-	// }
+	format_unsigned_integer(print_fn, user_data, integer_part, options);
+
+	if (fractional_part_significant_digits > 0)
+	{
+		fractional_part_string: string = { fractional_part_buffer, fractional_part_significant_digits };
+		print_fn(".", user_data);
+		print_fn(fractional_part_string, user_data);
+	}
 }
 
 unimplemented :: fn (name: string)
