@@ -380,7 +380,7 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 	fractional_part: f64;
 	fractional_part_buffer: u8[MAX_DIGITS_IN_U64];
 	fractional_part_digits: u8;
-	fractional_part_significant_digits: u8;
+	fractional_part_string: string;
 	negative: bool;
 	digit: u8;
 
@@ -393,7 +393,6 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 	integer_part = data as u64;
 	fractional_part = data - integer_part;
 	fractional_part_digits = 0;
-	fractional_part_significant_digits = 0;
 
 	while (fractional_part_digits < max_fractional_digits)
 	{
@@ -402,9 +401,13 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 		fractional_part_buffer[fractional_part_digits] = digit + '0';
 		fractional_part_digits += 1;
 		fractional_part -= digit;
-
-		fractional_part_significant_digits = fractional_part_digits;
 	}
+
+	fractional_part_string = string
+	{
+		data = fractional_part_buffer,
+		size = max_fractional_digits,
+	};
 
 	if (negative)
 	{
@@ -412,13 +415,8 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 	}
 
 	format_unsigned_integer(print_fn, user_data, integer_part, options);
-
-	if (fractional_part_significant_digits > 0)
-	{
-		fractional_part_string: string = { fractional_part_buffer, fractional_part_significant_digits };
-		print_fn(".", user_data);
-		print_fn(fractional_part_string, user_data);
-	}
+	print_fn(".", user_data);
+	print_fn(fractional_part_string, user_data);
 }
 
 unimplemented :: fn (name: string)
