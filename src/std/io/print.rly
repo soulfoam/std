@@ -403,10 +403,7 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 		fractional_part_digits += 1;
 		fractional_part -= digit;
 
-		if (digit != 0)
-		{
-			fractional_part_significant_digits = fractional_part_digits;
-		}
+		fractional_part_significant_digits = fractional_part_digits;
 	}
 
 	if (negative)
@@ -416,9 +413,12 @@ format_decimal :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data:
 
 	format_unsigned_integer(print_fn, user_data, integer_part, options);
 
-    fractional_part_string: string = { fractional_part_buffer, fractional_part_significant_digits };
-    print_fn(".", user_data);
-    print_fn(fractional_part_string, user_data);
+	if (fractional_part_significant_digits > 0)
+	{
+		fractional_part_string: string = { fractional_part_buffer, fractional_part_significant_digits };
+		print_fn(".", user_data);
+		print_fn(fractional_part_string, user_data);
+	}
 }
 
 unimplemented :: fn (name: string)
