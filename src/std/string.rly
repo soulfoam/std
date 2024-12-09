@@ -256,6 +256,8 @@ std_string_into_u32 :: fn (str: string, dst: u32&) -> bool
 
 std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
 {
+    if (str.size == 0) return false;
+
     dst@ = 0;
     exp: u64 = 1;
 
