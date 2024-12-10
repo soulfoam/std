@@ -55,11 +55,11 @@ export_library
 	std_io_file_get_size     :: fn (file: std_io_file&, dst_size: usize&) -> std_io_file_error;
 
 	// read
-	std_io_file_read        :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error;
+	std_io_file_read        :: fn (file: std_io_file&, buffer: void&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error;
 	std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_error;
 	
 	// write
-	std_io_file_write        :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error;
+	std_io_file_write        :: fn (file: std_io_file&, buffer: void&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error;
 	std_io_file_write_string :: fn (file: std_io_file&, str: string, dst_written_size: usize&) -> std_io_file_error;
 
 	// print
@@ -185,7 +185,7 @@ std_io_file_get_size :: fn (file: std_io_file&, dst_size: usize&) -> std_io_file
 
 // read
 
-std_io_file_read :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error
+std_io_file_read :: fn (file: std_io_file&, buffer: void&, buffer_size: usize, dst_read_size: usize&) -> std_io_file_error
 {
 	read_size: usize = clib_fread(buffer, 1, buffer_size, file.handle);
 	
@@ -254,7 +254,7 @@ std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_
 
 // write
 
-std_io_file_write :: fn (file: std_io_file&, buffer: u8&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error
+std_io_file_write :: fn (file: std_io_file&, buffer: void&, buffer_size: usize, dst_written_size: usize&) -> std_io_file_error
 {
 	written_size: usize = clib_fwrite(buffer, 1, buffer_size, file.handle);
 	
