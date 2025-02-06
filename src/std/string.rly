@@ -21,11 +21,15 @@ export_library
     std_string_into_u16 :: fn (str: string, dst: u16&) -> bool;
     std_string_into_u32 :: fn (str: string, dst: u32&) -> bool;
     std_string_into_u64 :: fn (str: string, dst: u64&) -> bool;
+
+    std_string_into_f32 :: fn (str: string, dst: f32&) -> bool;
+    std_string_into_f64 :: fn (str: string, dst: f64&) -> bool;
 }
 
 import
 {
 	"clib/ctype";
+	"clib/stdlib";
 	"std/io/print";
 	"std/mem/alloc";
 	"std/mem/ops";
@@ -182,12 +186,6 @@ std_string_find :: fn (str: string, find: string) -> string
 
 std_string_tokenize :: it (str: string, by: string, declare token: string)
 {
-    while (str.size >= by.size && std_mem_equal(str.data, by.data, by.size))
-    {
-        str.data += by.size;
-        str.size -= by.size;
-    }
-
     while (str.size > 0)
     {
         next: string = std_string_find(str, by);
@@ -209,12 +207,6 @@ std_string_tokenize :: it (str: string, by: string, declare token: string)
         str.size = str.size - (token.size + by.size);
 
         yield;
-
-        while (str.size >= by.size && std_mem_equal(str.data, by.data, by.size))
-        {
-            str.data += by.size;
-            str.size -= by.size;
-        }
     }
 }
 
@@ -277,6 +269,26 @@ std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
     }
 
     return true;
+}
+
+std_string_into_f32 :: fn (str: string, dst: f32&) -> bool
+{
+    val: f64;
+    res: bool = std_string_into_f64(str, val&);
+    if (!res) return false;
+
+    dst@ = val as f32;
+    return true;
+}
+
+std_string_into_f64 :: fn (str: string, dst: f64&) -> bool
+{
+    buf: u8[128];
+    std_mem_print(buf, size_of(buf), "{}\0", str) as void;
+    end: u8&;
+     
+    dst@ = clib_strtod(buf as c_char&, end& as c_char&&);
+    return end != buf;
 }
 
 ////////////////////////
