@@ -192,11 +192,8 @@ std_string_tokenize :: it (str: string, by: string, declare token: string)
 
         if (next.data == NULL)
         {
-            if (str.size > 0)
-            {
-                token = str;
-                yield;
-            }
+            token = str;
+            yield;
             break;
         }
 
