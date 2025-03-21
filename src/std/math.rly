@@ -120,6 +120,7 @@ export_library
     std_math_exp2f  :: fn (x: f32) -> f32;
     std_math_expm1  :: fn (x: f64) -> f64;
     std_math_expm1f :: fn (x: f32) -> f32;
+}
 
 import
 {
