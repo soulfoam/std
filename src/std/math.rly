@@ -112,7 +112,14 @@ export_library
 	// std_math_atanh
 	std_math_atanh_f32 :: fn (angle: f32) -> f32;
 	std_math_atanh_f64 :: fn (angle: f64) -> f64;
-}
+
+    // std_math_exp
+    std_math_exp    :: fn (x: f64) -> f64;
+    std_math_expf   :: fn (x: f32) -> f32;
+    std_math_exp2   :: fn (x: f64) -> f64;
+    std_math_exp2f  :: fn (x: f32) -> f32;
+    std_math_expm1  :: fn (x: f64) -> f64;
+    std_math_expm1f :: fn (x: f32) -> f32;
 
 import
 {
@@ -723,4 +730,36 @@ std_math_atanh_f32 :: fn (angle: f32) -> f32
 std_math_atanh_f64 :: fn (angle: f64) -> f64
 {
 	return clib_atanh(angle);
+}
+
+// std_math_exp
+
+std_math_exp :: fn (x: f64) -> f64 
+{
+    return clib_exp(x);
+}
+
+std_math_expf :: fn (x: f32) -> f32   
+{
+    return clib_expf(x);
+}
+
+std_math_exp2 :: fn (x: f64) -> f64 
+{
+    return clib_exp2(x);
+}
+
+std_math_exp2f :: fn (x: f32) -> f32   
+{
+    return clib_exp2f(x);
+}
+
+std_math_expm1 :: fn (x: f64) -> f64 
+{
+    return clib_expm1(x);
+}
+
+std_math_expm1f :: fn (x: f32) -> f32   
+{
+    return clib_expm1f(x);
 }
