@@ -8,9 +8,12 @@ export_library
 
 	std_string_for_each_byte :: it (str: string, declare byte: u8);
 
-    std_string_find        :: fn (str: string, find: string) -> string;
-    std_string_tokenize    :: it (str: string, by: string, declare token: string);
+    std_string_find :: fn (str: string, find: string) -> string;
+    std_string_find_ignore_case_ascii :: fn (str: string, find: string) -> string;
     std_string_starts_with :: fn (str: string, with: string) -> bool;
+    std_string_starts_with_ignore_case_ascii :: fn (str: string, with: string) -> bool;
+
+    std_string_tokenize    :: it (str: string, by: string, declare token: string);
 
     // result must be dealloced
     std_string_replace :: fn (str: string, replace: string, with: string) -> string;
@@ -117,6 +120,21 @@ std_string_starts_with :: fn (str: string, with: string) -> bool
     return true;
 }
 
+std_string_starts_with_ignore_case_ascii :: fn (str: string, with: string) -> bool
+{
+    if (with.size > str.size) return false;
+
+    i: usize = 0;
+    while (i < with.size)
+    {
+        if (clib_tolower(str.data[i]) != clib_tolower(with.data[i])) return false;
+        i += 1;
+    }
+
+    return true;
+}
+
+
 std_string_replace :: fn (str: string, replace: string, with: string) -> string
 {
     instances: usize = 0;
@@ -162,7 +180,7 @@ std_string_replace :: fn (str: string, replace: string, with: string) -> string
     return res;
 }
 
-std_string_find :: fn (str: string, find: string) -> string
+string_find :: fn (str: string, find: string, ignore_case_ascii: bool) -> string
 {
     i: usize = 0;
     while (i < str.size) 
@@ -170,10 +188,21 @@ std_string_find :: fn (str: string, find: string) -> string
         h: usize = i;
         n: usize = 0;
 
-        while (h < str.size && n < find.size && str.data[h] == find.data[n]) 
+        if (ignore_case_ascii)
         {
-            h += 1;
-            n += 1;
+            while (h < str.size && n < find.size && clib_tolower(str.data[h]) == clib_tolower(find.data[n]))
+            {
+                h += 1;
+                n += 1;
+            }
+        }
+        else
+        {
+            while (h < str.size && n < find.size && str.data[h] == find.data[n]) 
+            {
+                h += 1;
+                n += 1;
+            }
         }
 
         if (n == find.size) return string{str.data + i, str.size - i};
@@ -182,6 +211,16 @@ std_string_find :: fn (str: string, find: string) -> string
     }
 
     return string{NULL, 0}; 
+}
+
+std_string_find :: fn (str: string, find: string) -> string
+{
+    return string_find(str, find, false);
+}
+
+std_string_find_ignore_case_ascii :: fn (str: string, find: string) -> string
+{
+    return string_find(str, find, true);
 }
 
 std_string_tokenize :: it (str: string, by: string, declare token: string)
