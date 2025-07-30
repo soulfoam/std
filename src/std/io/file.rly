@@ -299,35 +299,35 @@ std_io_file_flush :: fn (file: std_io_file&) -> std_io_file_error
 std_io_file_seek_to :: fn (file: std_io_file&, position: usize) -> std_io_file_error
 {
 	// TODO: check for errors
-	clib_fseek(file.handle, position, clib_seek_set());
+	clib_fseek(file.handle, position, clib_seek_set()) as void;
 	return STD_IO_FILE_ERROR_NONE;
 }
 
 std_io_file_seek_to_start :: fn (file: std_io_file&) -> std_io_file_error
 {
 	// TODO: check for errors
-	clib_fseek(file.handle, 0, clib_seek_set());
+	clib_fseek(file.handle, 0, clib_seek_set()) as void;
 	return STD_IO_FILE_ERROR_NONE;
 }
 
 std_io_file_seek_to_end :: fn (file: std_io_file&) -> std_io_file_error
 {
 	// TODO: check for errors
-	clib_fseek(file.handle, 0, clib_seek_end());
+	clib_fseek(file.handle, 0, clib_seek_end()) as void;
 	return STD_IO_FILE_ERROR_NONE;
 }
 
 std_io_file_seek_forward :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error
 {
 	// TODO: check for errors
-	clib_fseek(file.handle, offset, clib_seek_cur());
+	clib_fseek(file.handle, offset, clib_seek_cur()) as void;
 	return STD_IO_FILE_ERROR_NONE;
 }
 
 std_io_file_seek_backward :: fn (file: std_io_file&, offset: ssize) -> std_io_file_error
 {
 	// TODO: check for errors
-	clib_fseek(file.handle, -offset, clib_seek_cur());
+	clib_fseek(file.handle, -offset, clib_seek_cur()) as void;
 	return STD_IO_FILE_ERROR_NONE;
 }
 
