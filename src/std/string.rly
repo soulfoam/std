@@ -25,6 +25,11 @@ export_library
     std_string_into_u32 :: fn (str: string, dst: u32&) -> bool;
     std_string_into_u64 :: fn (str: string, dst: u64&) -> bool;
 
+    std_string_into_s8  :: fn (str: string, dst: s8&)  -> bool;
+    std_string_into_s16 :: fn (str: string, dst: s16&) -> bool;
+    std_string_into_s32 :: fn (str: string, dst: s32&) -> bool;
+    std_string_into_s64 :: fn (str: string, dst: s64&) -> bool;
+
     std_string_into_f32 :: fn (str: string, dst: f32&) -> bool;
     std_string_into_f64 :: fn (str: string, dst: f64&) -> bool;
 }
@@ -304,6 +309,55 @@ std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
         }
     }
 
+    return true;
+}
+
+std_string_into_s8 :: fn (str: string, dst: s8&) -> bool
+{
+    val: s64;
+    res: bool = std_string_into_s64(str, val&);
+    dst@ = val as s8;
+    return res;
+}
+
+std_string_into_s16 :: fn (str: string, dst: s16&) -> bool
+{
+    val: s64;
+    res: bool = std_string_into_s64(str, val&);
+    dst@ = val as s16;
+    return res;
+}
+
+std_string_into_s32 :: fn (str: string, dst: s32&) -> bool
+{
+    val: s64;
+    res: bool = std_string_into_s64(str, val&);
+    dst@ = val as s32;
+    return res;
+}
+
+std_string_into_s64 :: fn (str: string, dst: s64&) -> bool
+{
+    if (str.size == 0) return false;
+
+    negative: bool = false;
+    start: u64 = 0;
+
+    if (str.data[0] == '-')
+    {
+        negative = true;
+        start = 1;
+        if (str.size == 1) return false; 
+    }
+
+    val: u64;
+    res: bool = std_string_into_u64(string{str.data + start, str.size - start}, val&);
+    if (!res) return false;
+
+    sval: s64 = val as s64;
+    if (negative) sval = -sval;
+
+    dst@ = sval;
     return true;
 }
 
