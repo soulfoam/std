@@ -198,11 +198,14 @@ format_arg :: fn (print_fn: std_io_print_string_fn&, user_data: void&, arg: vari
 
 format_bool :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: bool, options: format_options)
 {
-	switch (data)
-	{
-		true  { print_fn("true" , user_data); }
-		false { print_fn("false", user_data); }
-	}
+    if (data)
+    {
+        print_fn("true", user_data);
+    }
+    else
+    {
+        print_fn("false", user_data);
+    }
 }
 
 format_s8 :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s8, options: format_options)
