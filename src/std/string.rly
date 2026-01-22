@@ -330,21 +330,38 @@ std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
     if (str.size == 0) return false;
 
     dst@ = 0;
-    exp: u64 = 1;
+    base : u64 = 10;
+    exp  : u64 = 1;
 
     i: u64 = str.size;
+
+    if (str.size >= 2 && str.data[0] == '0' && (str.data[1] == 'x' || str.data[1] == 'X'))
+    {
+        base = 16;
+    }
+
     while (i > 0)
     {
         i -= 1;
-        if (character_is_digit(str.data[i]))
-        {
-            dst@ += character_into_u8(str.data[i]) * exp;
-            exp *= 10;
-        }
+
+        if (base == 16 && i < 2) break;
+
+        c := str.data[i];
+        digit: u64;
+
+        if (c >= '0' && c <= '9')
+            digit = (c - '0') as u64;
+        else if (base == 16 && c >= 'a' && c <= 'f')
+            digit = (c - 'a' + 10) as u64;
+        else if (base == 16 && c >= 'A' && c <= 'F')
+            digit = (c - 'A' + 10) as u64;
         else
-        {
             return false;
-        }
+
+        if (digit >= base) return false;
+
+        dst@ += digit * exp;
+        exp *= base;
     }
 
     return true;
