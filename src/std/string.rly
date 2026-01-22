@@ -346,7 +346,7 @@ std_string_into_u64 :: fn (str: string, dst: u64&) -> bool
 
         if (base == 16 && i < 2) break;
 
-        c := str.data[i];
+        c : char = str.data[i];
         digit: u64;
 
         if (c >= '0' && c <= '9')
