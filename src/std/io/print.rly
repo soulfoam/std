@@ -344,13 +344,18 @@ format_string :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: 
 
 format_signed_integer :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: s64, options: format_options)
 {
+    unsigned_data: u64;
 	if (data < 0)
 	{
-		data *= -1;
 		print_fn("-", user_data);
+        unsigned_data = 0 - (data as u64);
 	}
+    else
+    {
+        unsigned_data = data as u64;
+    }
 
-	format_unsigned_integer(print_fn, user_data, data, options);
+	format_unsigned_integer(print_fn, user_data, unsigned_data, options);
 }
 
 format_unsigned_integer :: fn (print_fn: std_io_print_string_fn&, user_data: void&, data: u64, options: format_options)
