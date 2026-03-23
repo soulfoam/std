@@ -29,6 +29,7 @@ export_library
 		STD_IO_FILE_ERROR_IS_DIRECTORY;
 		STD_IO_FILE_ERROR_TOO_BIG;
 		STD_IO_FILE_ERROR_FILE_BUSY;
+		STD_IO_FILE_ERROR_READ_TO_END_SIZE_MISMATCH;
 		STD_IO_FILE_ERROR_UNKNOWN;
 	}
 
@@ -239,15 +240,14 @@ std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_
 		return file_error;
 	}
 
-	// assert that read size must be data size
-	if (read_size != data_size)
-	{
-		unreachable("std_io_file_read_to_end");
-	}
-
 	// update dst
 	dst.data = data;
 	dst.size = data_size;
+
+	if (read_size != data_size)
+	{
+        return STD_IO_FILE_ERROR_READ_TO_END_SIZE_MISMATCH;
+	}
 
 	return STD_IO_FILE_ERROR_NONE;
 }
