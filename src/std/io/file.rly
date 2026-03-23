@@ -240,14 +240,15 @@ std_io_file_read_to_end :: fn (file: std_io_file&, dst: string&) -> std_io_file_
 		return file_error;
 	}
 
+	if (read_size != data_size)
+	{
+		std_mem_dealloc(data);
+        return STD_IO_FILE_ERROR_READ_TO_END_SIZE_MISMATCH;
+	}
+
 	// update dst
 	dst.data = data;
 	dst.size = data_size;
-
-	if (read_size != data_size)
-	{
-        return STD_IO_FILE_ERROR_READ_TO_END_SIZE_MISMATCH;
-	}
 
 	return STD_IO_FILE_ERROR_NONE;
 }
